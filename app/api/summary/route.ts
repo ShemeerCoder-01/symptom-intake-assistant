@@ -16,7 +16,10 @@ export async function POST(req: Request) {
       [{ role: 'system', content: SUMMARY_PROMPT }, { role: 'user', content: `Transcript:\n${transcript}` }],
       { stream: false, json: true },
     );
-    if (!upstream.ok) return Response.json({ error: 'The AI service is unavailable. Try again shortly.' }, { status: 502 });
+    if (!upstream.ok || !upstream.body) {
+      console.error('LLM error', upstream.status, await upstream.text());
+      return Response.json({ error: 'The AI service is unavailable. Try again shortly.' }, { status: 502 });
+    }
     const data = await upstream.json();
     const summary = normalizeSummary(extractJson(data.choices?.[0]?.message?.content ?? ''));
     return Response.json({ summary });

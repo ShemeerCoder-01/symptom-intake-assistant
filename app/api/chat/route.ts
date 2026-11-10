@@ -10,6 +10,7 @@ export async function POST(req: Request) {
   try {
     const upstream = await callLLM([{ role: 'system', content: SYSTEM_PROMPT }, ...checked.messages], { stream: true });
     if (!upstream.ok || !upstream.body) {
+      console.error('LLM error', upstream.status, await upstream.text());
       return Response.json({ error: 'The AI service is unavailable. Try again shortly.' }, { status: 502 });
     }
     return new Response(toTextStream(upstream.body), {
